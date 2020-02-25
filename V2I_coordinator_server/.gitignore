@@ -61,4 +61,5 @@ typings/
 .next
 
 # Visual Studio Code
+.vscode/
 *.code-workspace
