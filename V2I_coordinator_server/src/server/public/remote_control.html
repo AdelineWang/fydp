@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RC Car Controller and Calibration</title>
+  <link rel="stylesheet" href="lib/jquery-ui-1.12.1/jquery-ui.min.css"/>
+  <link rel="stylesheet" href="styles/remote_control.css"/>
+</head>
+<body>
+  <fieldset>
+    <legend>URL</legend>
+    <div>
+      <input type="text" id="serverUrl" value="ws://example.com/websocket" width="500px">
+      <button id="connectButton" style="display: inline-block;">Open</button>
+      <br>
+      <span>Vehicle ID:</span>
+      <input id="vehicleId" type="text"><br>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>Testing</legend>
+    <div>
+      <span>Raw Speed:</span>
+      <input id="rawSpeed" type="text"><br>
+      <div id="rawSpeedSlider"></div>
+      <br>
+      <span>Steering: </span>
+      <input id="steering" type="steering"><br>
+      <div id="steeringSlider"></div>
+      <button id="sendButton">Send</button>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>Calibrate</legend>
+    <div>
+      <button id="flipForwardReverseButton">Flip Forward Reverse</button>
+      <button id="flipLeftRightButton">Flip Left Right</button>
+      <br>
+      <span>Deadzone: </span>
+      <input id="deadzone" type="text"><br>
+      <span>Max Speed: </span>
+      <input id="maxSpeed" type="text"><br>
+      <button id="sendCalibButton">Calibrate</button>
+    </div>
+  </fieldset>
+
+  <script src="js/jquery-3.4.1.min.js"></script>
+  <script src="lib/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+  <script src="js/remote_control.js"></script>
+</body>
+</html>

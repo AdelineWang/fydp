@@ -1,0 +1,25 @@
+{
+  "name": "coordinator_server",
+  "version": "1.0.0",
+  "description": "A node.js websocket server for communicating with ESP8266_Vehicle.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./src/server/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Player-ID/V2I_coordinator_server.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Player-ID/V2I_coordinator_server/issues"
+  },
+  "homepage": "https://github.com/Player-ID/V2I_coordinator_server#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "ws": "^7.1.1"
+  }
+}

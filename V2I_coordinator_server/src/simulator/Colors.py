@@ -1,0 +1,9 @@
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+ASPHALT = (40, 43, 42)
+GRASS = (126, 200, 80)
+
+TL_RED_OFF = (128, 0, 0)
+TL_RED_ON = (249, 21, 47)
+TL_GREEN_OFF = (0, 77, 0)
+TL_GREEN_ON = (51, 165, 50)
