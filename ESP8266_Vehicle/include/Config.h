@@ -10,13 +10,14 @@ namespace veh {
 struct Config {
   char hostname[64];
   char port[16];
-  bool flipForward;
+  bool isForwardFlipped;
+  bool isSteeringFlipped;
+  int minAngle;
+  int maxAngle;
+  int midAngle;
   int desiredSpeedsLen;
   float desiredSpeeds[MAX_CALIB_DATA_COUNT];
   int desiredSpeedsPwm[MAX_CALIB_DATA_COUNT];
-  int desiredSteeringLen;
-  float desiredSteering[MAX_CALIB_DATA_COUNT];
-  int desiredSteeringPwm[MAX_CALIB_DATA_COUNT];
 };
 
 class ConfigManager {

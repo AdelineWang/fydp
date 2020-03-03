@@ -41,9 +41,17 @@ void setup() {
   veh::Config config;
   configManager.begin();
   configManager.loadConfig(config);
-  if (config.flipForward) {
+  if (config.isForwardFlipped) {
     driver.flipForwardReverse();
   }
+  if (config.isSteeringFlipped) {
+    driver.flipSteering();
+  }
+  if (config.desiredSpeedsLen > 0) {
+    driver.calibrateSpeed(config.desiredSpeedsLen, config.desiredSpeeds,
+                          config.desiredSpeedsPwm);
+  }
+  driver.calibrateSteering(config.minAngle, config.maxAngle, config.midAngle);
 
   WiFiManagerParameter ipParam("server",
     "Server IP",
@@ -117,7 +125,7 @@ void connectWiFi(String ssid, String password) {
 }
 
 void handleCommand(uint8_t* payload, size_t length) {
-  const size_t CAPACITY = 8;
+  const size_t CAPACITY = JSON_OBJECT_SIZE(8) + 2*JSON_ARRAY_SIZE(MAX_CALIB_DATA_COUNT);
   StaticJsonDocument<CAPACITY> doc;
   DeserializationError error = deserializeJson(doc, payload, length);
   if (error) {
@@ -159,10 +167,19 @@ void handleCommand(uint8_t* payload, size_t length) {
     veh::Config config;
     configManager.begin();
     configManager.loadConfig(config);
-    config.flipForward = !config.flipForward;
+    config.isForwardFlipped = !config.isForwardFlipped;
     configManager.saveConfig(config);
 
     driver.flipForwardReverse();
+  } else if (strcmp("calib_flip_steering", type) == 0) {
+    veh::ConfigManager configManager;
+    veh::Config config;
+    configManager.begin();
+    configManager.loadConfig(config);
+    config.isSteeringFlipped = !config.isSteeringFlipped;
+    configManager.saveConfig(config);
+
+    driver.flipSteering();
   } else if (strcmp("calib_speed", type) == 0) {
     veh::ConfigManager configManager;
     veh::Config config;
@@ -174,6 +191,18 @@ void handleCommand(uint8_t* payload, size_t length) {
     driver.calibrateSpeed(config.desiredSpeedsLen, config.desiredSpeeds,
                           config.desiredSpeedsPwm);
   } else if (strcmp("calib_steering", type) == 0) {
-    // TODO
+    int minAngle = doc["minAngle"];
+    int maxAngle = doc["maxAngle"];
+    int midAngle = doc["midAngle"];
+    driver.calibrateSteering(minAngle, maxAngle, midAngle);
+
+    veh::ConfigManager configManager;
+    veh::Config config;
+    configManager.begin();
+    configManager.loadConfig(config);
+    config.minAngle = minAngle;
+    config.maxAngle = maxAngle;
+    config.midAngle = midAngle;
+    configManager.saveConfig(config);
   }
 }
