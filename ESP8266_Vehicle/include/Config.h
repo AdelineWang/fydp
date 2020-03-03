@@ -1,6 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <ArduinoJson.h>
+
 #define MAX_CALIB_DATA_COUNT 64
 
 namespace veh {
@@ -21,9 +23,12 @@ class ConfigManager {
 public:
   static const char* filename;
   static void begin();
-  static void resetConfig(Config& config);
   static void loadConfig(Config& config);
   static bool saveConfig(Config& config);
+  static void zeroSpeedData(Config& config);
+  static void zeroSteeringData(Config& config);
+  static void parseSpeedData(Config& config, JsonDocument& doc);
+  static void parseSteeringData(Config& config, JsonDocument& doc);
 };
 
 }

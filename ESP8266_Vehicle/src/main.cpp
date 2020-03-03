@@ -155,16 +155,24 @@ void handleCommand(uint8_t* payload, size_t length) {
       connection.sendTXT(msg);
     });
   } else if (strcmp("calib_flip_forward", type) == 0) {
-    driver.flipForwardReverse();
-
     veh::ConfigManager configManager;
     veh::Config config;
     configManager.begin();
     configManager.loadConfig(config);
     config.flipForward = !config.flipForward;
     configManager.saveConfig(config);
+
+    driver.flipForwardReverse();
   } else if (strcmp("calib_speed", type) == 0) {
-    // TODO
+    veh::ConfigManager configManager;
+    veh::Config config;
+    configManager.begin();
+    configManager.loadConfig(config);
+    configManager.parseSpeedData(config, doc);
+    configManager.saveConfig(config);
+
+    driver.calibrateSpeed(config.desiredSpeedsLen, config.desiredSpeeds,
+                          config.desiredSpeedsPwm);
   } else if (strcmp("calib_steering", type) == 0) {
     // TODO
   }

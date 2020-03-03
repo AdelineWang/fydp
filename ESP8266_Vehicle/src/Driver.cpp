@@ -25,6 +25,10 @@ void Driver::flipForwardReverse() {
   reverse = temp;
 }
 
+void Driver::calibrateSpeed(int length, float* desiredSpeeds, int* pwmVals) {
+  speedMapper.calibrate(length, desiredSpeeds, pwmVals);
+}
+
 float Driver::getSpeed() {
   return heldCommand.speed;
 }
@@ -43,8 +47,7 @@ void Driver::drive(driver_command_t command) {
     digitalWrite(pins.in2, LOW);
   }
 
-  int pulseWidth = 1023;
-  // TODO: Scaling
+  int pulseWidth = speedMapper.map(std::abs(command.speed));
   analogWrite(pins.ena, pulseWidth);
 
   // TODO: Steering

@@ -31,41 +31,8 @@ void ConfigManager::loadConfig(Config& config) {
     doc["port"] | "8080",
     sizeof(config.port));
   config.flipForward = doc["flipForward"] | false;
-  resetConfig(config);
-
-  config.desiredSpeedsLen = doc["desiredSpeedsLen"] | 0;
-  if (config.desiredSpeedsLen >= 0) {
-    int i = 0;
-    JsonArray desiredSpeeds = doc["desiredSpeeds"];
-    for (float speed : desiredSpeeds) {
-      config.desiredSpeeds[i] = speed;
-      ++i;
-    }
-
-    i = 0;
-    JsonArray desiredSpeedsPwm = doc["desiredSpeedsPwm"];
-    for (int pwm : desiredSpeedsPwm) {
-      config.desiredSpeedsPwm[i] = pwm;
-      ++i;
-    }
-  }
-  
-  config.desiredSteeringLen = doc["desiredSteeringLen"] | 0;
-  if (config.desiredSpeedsLen >= 0) {
-    int i = 0;
-    JsonArray desiredSteering = doc["desiredSteering"];
-    for (float steering : desiredSteering) {
-      config.desiredSteering[i] = steering;
-      ++i;
-    }
-
-    i = 0;
-    JsonArray desiredSteeringPwm = doc["desiredSteeringPwm"];
-    for (int pwm : desiredSteeringPwm) {
-      config.desiredSteeringPwm[i] = pwm;
-      ++i;
-    }
-  }
+  parseSpeedData(config, doc);
+  parseSteeringData(config, doc);
 
   configFile.close();
 }
@@ -109,11 +76,56 @@ bool ConfigManager::saveConfig(Config& config) {
   return true;
 }
 
-void ConfigManager::resetConfig(Config& config) {
+void ConfigManager::zeroSpeedData(Config& config) {
   for (int i = 0; i < MAX_CALIB_DATA_COUNT; ++i) {
     config.desiredSpeeds[i] = 0;
     config.desiredSpeedsPwm[i] = 0;
+  }
+}
+
+void ConfigManager::zeroSteeringData(Config& config) {
+  for (int i = 0; i < MAX_CALIB_DATA_COUNT; ++i) {
     config.desiredSteering[i] = 0;
     config.desiredSteeringPwm[i] = 0;
+  }
+}
+
+void ConfigManager::parseSpeedData(Config& config, JsonDocument& doc) {
+  zeroSpeedData(config);
+  config.desiredSpeedsLen = doc["desiredSpeedsLen"] | 0;
+  if (config.desiredSpeedsLen >= 0) {
+    int i = 0;
+    JsonArray desiredSpeeds = doc["desiredSpeeds"];
+    for (float speed : desiredSpeeds) {
+      config.desiredSpeeds[i] = speed;
+      ++i;
+    }
+
+    i = 0;
+    JsonArray desiredSpeedsPwm = doc["desiredSpeedsPwm"];
+    for (int pwm : desiredSpeedsPwm) {
+      config.desiredSpeedsPwm[i] = pwm;
+      ++i;
+    }
+  }
+}
+
+void ConfigManager::parseSteeringData(Config& config, JsonDocument& doc) {
+  zeroSteeringData(config);
+  config.desiredSteeringLen = doc["desiredSteeringLen"] | 0;
+  if (config.desiredSpeedsLen >= 0) {
+    int i = 0;
+    JsonArray desiredSteering = doc["desiredSteering"];
+    for (float steering : desiredSteering) {
+      config.desiredSteering[i] = steering;
+      ++i;
+    }
+
+    i = 0;
+    JsonArray desiredSteeringPwm = doc["desiredSteeringPwm"];
+    for (int pwm : desiredSteeringPwm) {
+      config.desiredSteeringPwm[i] = pwm;
+      ++i;
+    }
   }
 }

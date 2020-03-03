@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 
+#include "Calibration.h"
+
 #define ENA 2
 #define IN1 16
 #define IN2 0
@@ -28,6 +30,7 @@ public:
   void begin();
   void begin(driver_pins_t config);
   void flipForwardReverse();
+  void calibrateSpeed(int length, float* desiredSpeeds, int* pwmVals);
 
   void drive(driver_command_t command);
   void driveRaw(driver_command_t command);
@@ -41,9 +44,9 @@ private:
   } direction_t;
 
   driver_pins_t pins = {
-    ENA, // ena
-    IN1, // in1
-    IN2 // in2
+    ENA,
+    IN1,
+    IN2
   };
 
   const direction_t DIR_A = {
@@ -59,6 +62,8 @@ private:
   direction_t reverse = DIR_B;
 
   driver_command_t heldCommand = { 0, 0 };
+
+  PwmMapper speedMapper;
 };
 
 }
