@@ -44,10 +44,6 @@ void setup() {
   if (config.flipForward) {
     driver.flipForwardReverse();
   }
-  if (config.flipSteering) {
-    driver.flipLeftRight();
-  }
-  driver.updateSaturation(config.deadzone, config.maxSpeed);
 
   WiFiManagerParameter ipParam("server",
     "Server IP",
@@ -104,9 +100,25 @@ void loop() {
   prevMillis = currMillis;
 }
 
+void saveConfig() {
+  shouldSaveConfig = true;
+}
+
+void connectWiFi(String ssid, String password) {
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting...");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println();
+  Serial.print("Connected - IP Address: ");
+  Serial.println(WiFi.localIP());
+}
+
 void handleCommand(uint8_t* payload, size_t length) {
-  const int capacity = JSON_OBJECT_SIZE(8);
-  StaticJsonDocument<capacity> doc;
+  const size_t CAPACITY = 8;
+  StaticJsonDocument<CAPACITY> doc;
   DeserializationError error = deserializeJson(doc, payload, length);
   if (error) {
     Serial.println(F("deserializeJson() failed!"));
@@ -151,41 +163,9 @@ void handleCommand(uint8_t* payload, size_t length) {
     configManager.loadConfig(config);
     config.flipForward = !config.flipForward;
     configManager.saveConfig(config);
-  } else if (strcmp("calib_flip_steering", type) == 0) {
-    driver.flipLeftRight();
-    veh::ConfigManager configManager;
-    veh::Config config;
-    configManager.begin();
-    configManager.loadConfig(config);
-    config.flipSteering = !config.flipSteering;
-    configManager.saveConfig(config);
-  } else if (strcmp("calib_sat", type) == 0) {
-    float deadzone = doc["deadzone"];
-    float maxSpeed = doc["maxSpeed"];
-    driver.updateSaturation(deadzone, maxSpeed);
-
-    veh::ConfigManager configManager;
-    veh::Config config;
-    configManager.begin();
-    configManager.loadConfig(config);
-    config.deadzone = deadzone;
-    config.maxSpeed = maxSpeed;
-    configManager.saveConfig(config);
+  } else if (strcmp("calib_speed", type) == 0) {
+    // TODO
+  } else if (strcmp("calib_steering", type) == 0) {
+    // TODO
   }
-}
-
-void saveConfig() {
-  shouldSaveConfig = true;
-}
-
-void connectWiFi(String ssid, String password) {
-  WiFi.begin(ssid, password);
-  Serial.print("Connecting...");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println();
-  Serial.print("Connected - IP Address: ");
-  Serial.println(WiFi.localIP());
 }
