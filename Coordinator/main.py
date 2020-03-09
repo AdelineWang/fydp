@@ -15,7 +15,9 @@ if __name__ == '__main__':
     print('(error_width, error_height) = ' + str(calib.calc_error_per_pixel(0.05)))
 
     red_vehicle = Vehicle('red', '177130', 0.15, 0.5)
-    vehicles = [red_vehicle]
+    blue_vehicle = Vehicle('blue', '132829', 0.15, 0.5)
+    green_vehicle = Vehicle('green', '100202', 0.15, 0.5)
+    vehicles = [red_vehicle, blue_vehicle, green_vehicle]
 
     road = StraightRoad(calib, 0.06, vehicles)
     coord = Coordinator(road)

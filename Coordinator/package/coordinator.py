@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
 import cv2
-import PIL
 import math
 
 class Coordinator:
@@ -11,13 +10,25 @@ class Coordinator:
         self.processor = ImageProcessor()
 
     def update(self):
+        vehicle.x = 423
+        vehicle.y = 290
+        vehicle.heading = 0.0
+
+        vehicle = self.road.vehicles['green']
+        vehicle.x = 900
+        vehicle.y = 320
+        vehicle.heading = 1.2
+
+        self.road.update_positions()
+        self.road.calc_accel(0.1)
+
         # Grab the frame which needs to be processed
         image = mpimg.imread('overheadreal.jpg')
 
         (midpoint, bearing) = self.processor.process_image(image)
         vehicle = self.road.vehicles['red']
         vehicle.x = int(midpoint[0])
-        vehicle.y = int(midpoint[1])    
+        vehicle.y = int(midpoint[1])
         vehicle.heading = bearing
         self.road.update_positions()
 
@@ -38,7 +49,7 @@ class ImageProcessor:
         r1 = (175, 100, 100)
         r2 = (180, 255, 255)
         mask2 = cv2.inRange(hsv_img, r1, r2)
-        
+
         combinedMask = cv2.bitwise_or(mask1, mask2)
 
         gaussMask = self.gaussian_blur(combinedMask, 15)
@@ -46,7 +57,7 @@ class ImageProcessor:
         dilation = cv2.dilate(combinedMask, kernel)
         edges = cv2.bitwise_xor(combinedMask, dilation, 5)
         lines = cv2.HoughLinesP(edges, rho=2, theta=np.pi/180, threshold=30, minLineLength=2, maxLineGap=2)
-        
+
         bundler = HoughBundler()
         bundled_lines = bundler.process_lines(lines)
 
@@ -75,7 +86,7 @@ class ImageProcessor:
             #print(bundle_length)
             #bundle_length /= len(bun)
             average_orientation /= bundle_length
-            
+
             #print(average_orientation)
             average_bundle_slopes.append(average_orientation)
             if bundle_length > max_len:
@@ -85,9 +96,9 @@ class ImageProcessor:
                 #print("here")
             index += 1
         bearing = math.degrees(average_bundle_slopes[dominant_slope])
-        
+
         return (midpoint, bearing)
-        
+
     def gaussian_blur(self, img, kernel_size):
         """Applies a Gaussian Noise kernel"""
         return cv2.GaussianBlur(img, (kernel_size, kernel_size), 0)
@@ -135,7 +146,7 @@ class ImageProcessor:
             return (xmin, xmax, ymin, ymax)
 
 
-    
+
 class HoughBundler:
     '''Clasterize and merge each cluster of cv2.HoughLinesP() output
     a = HoughBundler()
@@ -287,7 +298,7 @@ class HoughBundler:
                     merged_lines_all.extend(merged_lines)
 
         return merged_lines_all
-    
+
     def bundleBySlope(self, lines):
         groups = []
         min_angle_to_merge = 30
@@ -304,5 +315,5 @@ class HoughBundler:
                         break
             if not has_group:
                 groups.append([line_new])
-        
+
         return groups
