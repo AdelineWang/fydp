@@ -13,7 +13,7 @@ class Acc:
         self.maxDecel = maxDecel
         self.cool = 0.99
 
-    def calcAccel(self, gap, v, vLead, aLead):
+    def calc_accel(self, gap, v, vLead, aLead):
         if gap < 0.001:
             return -self.maxDecel
         
