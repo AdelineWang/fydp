@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 if __name__ == '__main__':
+    from package.processor import ImageProcessor
     from package.coordinator import Coordinator
     from package.calibrator import Calibrator
     from package.road.vehicle import Vehicle
@@ -18,5 +19,6 @@ if __name__ == '__main__':
     vehicles = [red_vehicle]
 
     road = StraightRoad(calib, 0.06, vehicles)
-    coord = Coordinator(road)
+    processor = ImageProcessor()
+    coord = Coordinator(road, processor)
     coord.update()
