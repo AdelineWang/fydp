@@ -27,12 +27,12 @@ if __name__ == '__main__':
     print('(width, height) per pix = ' + str(calib.calc_distance_per_pixel()))
     print('(error_width, error_height) = ' + str(calib.calc_error_per_pixel(0.05)))
 
-    red_vehicle = Vehicle('red', '177130', 0.15, 0.5, y=calib.image_height/2 - 20, lane=1)
-    blue_vehicle = Vehicle('blue', '132829', 0.15, 0.5, y=calib.image_height/2 + 15)
-    green_vehicle = Vehicle('green', '100202', 0.15, 0.5, x=100, y=calib.image_height/2 + 40)
+    red_vehicle = Vehicle('red', '177130', y=calib.image_height/2 - 40, lane=0)
+    blue_vehicle = Vehicle('blue', '132829', y=calib.image_height/2 + 30, lane=1)
+    green_vehicle = Vehicle('green', '100202', x=100, y=calib.image_height/2 + 60, lane=1)
     vehicles = [red_vehicle, blue_vehicle, green_vehicle]
 
-    road = StraightRoad(calib, 0.06, vehicles)
+    road = StraightRoad(calib, 0.1, vehicles)
     processor = ImageProcessor()
     coord = Coordinator(road, processor)
     if is_simulation:

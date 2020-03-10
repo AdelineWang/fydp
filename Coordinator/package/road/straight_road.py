@@ -67,3 +67,12 @@ class StraightRoad:
     def calc_speed(self, dt):
         for vehicle in self.vehicles.values():
             vehicle.speed = max(vehicle.speed + vehicle.accel * dt, 0)
+
+    def calc_steering(self):
+        for vehicle in self.vehicles.values():
+            vehicle.calc_steering(self.pixel_width, self.pixel_height,
+                                  0.0, self.calc_cross_track_error)
+
+    def calc_cross_track_error(self, fx, fy, lane):
+        lane_y = self.lane_center_lines[lane] * self.pixel_height
+        return (0, fy - lane_y)

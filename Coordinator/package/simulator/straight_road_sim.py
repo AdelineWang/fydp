@@ -17,7 +17,8 @@ class StraightRoadSim:
 
             plt.cla()
             plt.xlim(0, self.xlim)
-            plt.ylim(0, self.ylim)
+            plt.ylim(self.ylim, 0)
+            plt.gca().xaxis.tick_top()
             self.plot_lanes()
             for veh in self.coord.road.vehicles.values():
                 plt.plot(veh.x * pixel_width, veh.y * pixel_height, marker='x',
