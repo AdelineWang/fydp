@@ -31,13 +31,19 @@ class Vehicle:
         self.longitude = longitude
         self.latitude = latitude
 
-        self.long_model = Acc(3, 3, 10, 1.4, 2, 1, 0.3, 0.5)
+        self.long_model = Acc(
+            desired_speed=0.5,
+            speed_limit=2,
+            max_speed=2,
+            desired_time_gap=0.5,
+            min_gap=0.05,
+            max_accel=0.2,
+            comfy_decel=0.06,
+            max_decel=0.2)
+
         self.steering = 0.0
         self.speed = 0.0
         self.accel = 0.0
 
         self.leader = None
         self.lag = None
-
-    def update(self, dt):
-        self.speed = max(self.speed + self.accel * dt, 0)

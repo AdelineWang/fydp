@@ -1,3 +1,5 @@
+import math
+
 import cv2
 
 class Coordinator:
@@ -28,3 +30,16 @@ class Coordinator:
         vehicle.y = int(midpoint[1])
         vehicle.heading = bearing
         self.road.update_positions()
+
+    def sim_update(self, dt):
+        self.road.update_positions()
+        self.road.calc_accel(dt)
+
+        pixel_width = self.road.pixel_width
+        pixel_height = self.road.pixel_height
+        for veh in self.road.vehicles.values():
+            d = veh.speed * dt + 0.5 * veh.accel * dt * dt
+            veh.x += d * math.cos(veh.heading) / pixel_width
+            veh.y += d * math.sin(veh.heading) / pixel_height
+
+        self.road.calc_speed(dt)
