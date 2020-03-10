@@ -1,5 +1,16 @@
 # FYDP
 
+### Control
+
+HTML webpages that send JSON data to websocket server for controlling
+calibration and test scenarios. Open the HTML files in your favorite browser.
+
+### Coordinator
+
+Main navigation coordinator and vehicle position identifier implemented in
+Python. Setup a Python virtual environment then run `pip install -r
+requirements.txt` and `python main.py`
+
 ### ESP8266_Vehicle
 
 This is the directory for the vehicle firmware. You need VSCode and PlatformIO to build and upload the firmware. With PlatformIO, you should be able to simply open the project (folder) and then hit build/upload.
