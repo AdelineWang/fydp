@@ -41,8 +41,6 @@ class ImageProcessor:
         max_len = 0
         average_bundle_slopes = []
         for bun in slopeBundles:
-            #print(len(bun))
-            #print("\n")
             bundle_length = 0
             average_orientation = 0
             for line in bun:
@@ -54,17 +52,13 @@ class ImageProcessor:
                 line_orientation = math.atan2((line[1][1] - line[0][1]), (line[1][0] - line[0][0]))
                 average_orientation += line_orientation * length # weighted orientation
                 bundle_length += length
-            #print(bundle_length)
-            #bundle_length /= len(bun)
             average_orientation /= bundle_length
             
-            #print(average_orientation)
             average_bundle_slopes.append(average_orientation)
             if bundle_length > max_len:
                 max_len = bundle_length
                 # Likely dominant slope
                 dominant_slope = index
-                #print("here")
             index += 1
         bearing = math.degrees(average_bundle_slopes[dominant_slope])
         
@@ -82,7 +76,6 @@ class ImageProcessor:
             ymin = bounding_box[2]
             ymax = bounding_box[3]
             midpoint = ((xmax+xmin)/2, (ymax+ymin)/2)
-            #print(midpoint)
             return (midpoint, bounding_box)
 
     def find_bounding_box(self, bundled_lines):
@@ -117,7 +110,7 @@ class ImageProcessor:
             return (xmin, xmax, ymin, ymax)
 
 
-    
+# Modified version of https://stackoverflow.com/questions/45531074/how-to-merge-lines-after-houghlinesp
 class HoughBundler:
     '''Clasterize and merge each cluster of cv2.HoughLinesP() output
     a = HoughBundler()
