@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 if __name__ == '__main__':
-    from package.processor import ImageProcessor
+    from package.image_processor import ImageProcessor
     from package.coordinator import Coordinator
     from package.calibrator import Calibrator
     from package.road.vehicle import Vehicle

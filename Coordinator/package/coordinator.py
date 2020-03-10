@@ -6,6 +6,7 @@ class Coordinator:
         self.processor = processor
 
     def update(self):
+        vehicle = self.road.vehicles['red']
         vehicle.x = 423
         vehicle.y = 290
         vehicle.heading = 0.0
@@ -19,8 +20,8 @@ class Coordinator:
         self.road.calc_accel(0.1)
 
         # Grab the frame which needs to be processed
-        image = cv2.imread('overheadreal.jpg')        
-        
+        image = cv2.imread('overheadreal.jpg')
+
         (midpoint, bearing) = self.processor.process_image(image)
         vehicle = self.road.vehicles['red']
         vehicle.x = int(midpoint[0])
