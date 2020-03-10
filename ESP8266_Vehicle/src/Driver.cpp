@@ -1,6 +1,7 @@
 #include "Driver.h"
 
 #include <Arduino.h>
+#include <Servo.h>
 
 using namespace veh;
 
@@ -8,16 +9,12 @@ void Driver::begin() {
   pinMode(pins.ena, OUTPUT);
   pinMode(pins.in1, OUTPUT);
   pinMode(pins.in2, OUTPUT);
-  pinMode(pins.enb, OUTPUT);
-  pinMode(pins.in3, OUTPUT);
-  pinMode(pins.in4, OUTPUT);
 
   analogWrite(pins.ena, 0);
-  analogWrite(pins.enb, 0);
   digitalWrite(pins.in1, LOW);
   digitalWrite(pins.in2, LOW);
-  digitalWrite(pins.in3, LOW);
-  digitalWrite(pins.in4, LOW);
+
+  steering.attach(pins.servo);
 }
 
 void Driver::begin(driver_pins_t config) {
@@ -31,15 +28,18 @@ void Driver::flipForwardReverse() {
   reverse = temp;
 }
 
-void Driver::flipLeftRight() {
-  Driver::direction_t temp = left;
-  left = right;
-  right = temp;
+void Driver::flipSteering() {
+  isSteeringFlipped = !isSteeringFlipped;
 }
 
-void Driver::updateSaturation(int deadzone, float maxSpeed) {
-  Driver::deadzone = deadzone;
-  Driver::maxSpeed = maxSpeed;
+void Driver::calibrateSpeed(int length, float* desiredSpeeds, int* pwmVals) {
+  speedMapper.calibrate(length, desiredSpeeds, pwmVals);
+}
+
+void Driver::calibrateSteering(int minAngle, int maxAngle, int midAngle) {
+  minSteeringAngle = minAngle;
+  maxSteeringAngle = maxAngle;
+  midSteeringAngle = midAngle;
 }
 
 float Driver::getSpeed() {
@@ -47,6 +47,8 @@ float Driver::getSpeed() {
 }
 
 void Driver::drive(driver_command_t command) {
+  heldCommand = command;
+
   if (command.speed > 0) {
     digitalWrite(pins.in1, forward.in1);
     digitalWrite(pins.in2, forward.in2);
@@ -58,27 +60,14 @@ void Driver::drive(driver_command_t command) {
     digitalWrite(pins.in2, LOW);
   }
 
-  int pulseWidth;
-  if (command.speed < 0.8) {
-    pulseWidth = 0;
-  } else if (command.speed >= maxSpeed) {
-    pulseWidth = 1023;
-  } else {
-    pulseWidth = (1023 - deadzone)*(command.speed / maxSpeed) + deadzone;
-  }
+  int pulseWidth = speedMapper.map(std::abs(command.speed));
   analogWrite(pins.ena, pulseWidth);
 
-  if (command.steering > 0) {
-    digitalWrite(pins.in3, right.in1);
-    digitalWrite(pins.in4, right.in2);
-  } else if (command.steering < 0) {
-    digitalWrite(pins.in3, left.in1);
-    digitalWrite(pins.in4, left.in2);
-  } else {
-    digitalWrite(pins.in3, LOW);
-    digitalWrite(pins.in4, LOW);
-  }
-  // TODO: Scaling
+  int angle = isSteeringFlipped ? midSteeringAngle - command.steering
+    : midSteeringAngle + command.steering;
+  angle = max(angle, minSteeringAngle);
+  angle = min(angle, maxSteeringAngle);
+  steering.write(angle);
 }
 
 void Driver::driveRaw(driver_command_t command) {
@@ -96,17 +85,5 @@ void Driver::driveRaw(driver_command_t command) {
   int pulseWidth = command.speed;
   analogWrite(pins.ena, pulseWidth);
 
-  if (command.steering > 0) {
-    digitalWrite(pins.in3, right.in1);
-    digitalWrite(pins.in4, right.in2);
-  } else if (command.steering < 0) {
-    digitalWrite(pins.in3, left.in1);
-    digitalWrite(pins.in4, left.in2);
-  } else {
-    digitalWrite(pins.in3, LOW);
-    digitalWrite(pins.in4, LOW);
-  }
-
-  // pulseWidth = command.steering;
-  // analogWrite(pins.enb, 0);
+  steering.write(command.steering);
 }

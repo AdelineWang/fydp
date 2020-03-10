@@ -41,13 +41,17 @@ void setup() {
   veh::Config config;
   configManager.begin();
   configManager.loadConfig(config);
-  if (config.flipForward) {
+  if (config.isForwardFlipped) {
     driver.flipForwardReverse();
   }
-  if (config.flipSteering) {
-    driver.flipLeftRight();
+  if (config.isSteeringFlipped) {
+    driver.flipSteering();
   }
-  driver.updateSaturation(config.deadzone, config.maxSpeed);
+  if (config.desiredSpeedsLen > 0) {
+    driver.calibrateSpeed(config.desiredSpeedsLen, config.desiredSpeeds,
+                          config.desiredSpeedsPwm);
+  }
+  driver.calibrateSteering(config.minAngle, config.maxAngle, config.midAngle);
 
   WiFiManagerParameter ipParam("server",
     "Server IP",
@@ -104,9 +108,25 @@ void loop() {
   prevMillis = currMillis;
 }
 
+void saveConfig() {
+  shouldSaveConfig = true;
+}
+
+void connectWiFi(String ssid, String password) {
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting...");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println();
+  Serial.print("Connected - IP Address: ");
+  Serial.println(WiFi.localIP());
+}
+
 void handleCommand(uint8_t* payload, size_t length) {
-  const int capacity = JSON_OBJECT_SIZE(8);
-  StaticJsonDocument<capacity> doc;
+  const size_t CAPACITY = JSON_OBJECT_SIZE(8) + 2*JSON_ARRAY_SIZE(MAX_CALIB_DATA_COUNT);
+  StaticJsonDocument<CAPACITY> doc;
   DeserializationError error = deserializeJson(doc, payload, length);
   if (error) {
     Serial.println(F("deserializeJson() failed!"));
@@ -143,49 +163,46 @@ void handleCommand(uint8_t* payload, size_t length) {
       connection.sendTXT(msg);
     });
   } else if (strcmp("calib_flip_forward", type) == 0) {
+    veh::ConfigManager configManager;
+    veh::Config config;
+    configManager.begin();
+    configManager.loadConfig(config);
+    config.isForwardFlipped = !config.isForwardFlipped;
+    configManager.saveConfig(config);
+
     driver.flipForwardReverse();
-
-    veh::ConfigManager configManager;
-    veh::Config config;
-    configManager.begin();
-    configManager.loadConfig(config);
-    config.flipForward = !config.flipForward;
-    configManager.saveConfig(config);
   } else if (strcmp("calib_flip_steering", type) == 0) {
-    driver.flipLeftRight();
     veh::ConfigManager configManager;
     veh::Config config;
     configManager.begin();
     configManager.loadConfig(config);
-    config.flipSteering = !config.flipSteering;
+    config.isSteeringFlipped = !config.isSteeringFlipped;
     configManager.saveConfig(config);
-  } else if (strcmp("calib_sat", type) == 0) {
-    float deadzone = doc["deadzone"];
-    float maxSpeed = doc["maxSpeed"];
-    driver.updateSaturation(deadzone, maxSpeed);
+
+    driver.flipSteering();
+  } else if (strcmp("calib_speed", type) == 0) {
+    veh::ConfigManager configManager;
+    veh::Config config;
+    configManager.begin();
+    configManager.loadConfig(config);
+    configManager.parseSpeedData(config, doc);
+    configManager.saveConfig(config);
+
+    driver.calibrateSpeed(config.desiredSpeedsLen, config.desiredSpeeds,
+                          config.desiredSpeedsPwm);
+  } else if (strcmp("calib_steering", type) == 0) {
+    int minAngle = doc["minAngle"];
+    int maxAngle = doc["maxAngle"];
+    int midAngle = doc["midAngle"];
+    driver.calibrateSteering(minAngle, maxAngle, midAngle);
 
     veh::ConfigManager configManager;
     veh::Config config;
     configManager.begin();
     configManager.loadConfig(config);
-    config.deadzone = deadzone;
-    config.maxSpeed = maxSpeed;
+    config.minAngle = minAngle;
+    config.maxAngle = maxAngle;
+    config.midAngle = midAngle;
     configManager.saveConfig(config);
   }
-}
-
-void saveConfig() {
-  shouldSaveConfig = true;
-}
-
-void connectWiFi(String ssid, String password) {
-  WiFi.begin(ssid, password);
-  Serial.print("Connecting...");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println();
-  Serial.print("Connected - IP Address: ");
-  Serial.println(WiFi.localIP());
 }

@@ -17,7 +17,8 @@ void ConfigManager::begin() {
 
 void ConfigManager::loadConfig(Config& config) {
   File configFile = SPIFFS.open(ConfigManager::filename, "r");
-  StaticJsonDocument<512> doc;
+  const size_t CAPACITY = JSON_OBJECT_SIZE(10) + 2*JSON_ARRAY_SIZE(MAX_CALIB_DATA_COUNT);
+  StaticJsonDocument<CAPACITY> doc;
   DeserializationError error = deserializeJson(doc, configFile);
   if (error) {
     Serial.println("Failed to read config file, using default config.");
@@ -29,11 +30,13 @@ void ConfigManager::loadConfig(Config& config) {
   strlcpy(config.port,
     doc["port"] | "8080",
     sizeof(config.port));
-  config.flipForward = doc["flipForward"] | false;
-  config.flipSteering = doc["flipSteering"] | false;
-  config.deadzone = doc["deadzone"] | 0;
-  config.maxSpeed = doc["maxSpeed"] | 10.0;
-  
+  config.isForwardFlipped = doc["isForwardFlipped"] | false;
+  config.isSteeringFlipped = doc["isSteeringFlipped"] | false;
+  config.minAngle = doc["minAngle"] | 0;
+  config.maxAngle = doc["maxAngle"] | 60;
+  config.midAngle = doc["midAngle"] | 30;
+  parseSpeedData(config, doc);
+
   configFile.close();
 }
 
@@ -44,13 +47,23 @@ bool ConfigManager::saveConfig(Config& config) {
     return false;
   }
 
-  StaticJsonDocument<512> doc;
+  const size_t CAPACITY = JSON_OBJECT_SIZE(10) + 2*JSON_ARRAY_SIZE(MAX_CALIB_DATA_COUNT);
+  StaticJsonDocument<CAPACITY> doc;
   doc["hostname"] = config.hostname;
   doc["port"] = config.port;
-  doc["flipForward"] = config.flipForward;
-  doc["flipSteering"] = config.flipSteering;
-  doc["deadzone"] = config.deadzone;
-  doc["maxSpeed"] = config.maxSpeed;
+  doc["isForwardFlipped"] = config.isForwardFlipped;
+  doc["isSteeringFlipped"] = config.isSteeringFlipped;
+  doc["minAngle"] = config.minAngle;
+  doc["maxAngle"] = config.maxAngle;
+  doc["midAngle"] = config.midAngle;
+
+  doc["desiredSpeedsLen"] = config.desiredSpeedsLen;
+  JsonArray desiredSpeeds = doc.createNestedArray("desiredSpeeds");
+  JsonArray desiredSpeedsPwm = doc.createNestedArray("desiredSpeedsPwm");
+  for (int i = 0; i < config.desiredSpeedsLen; ++i) {
+    desiredSpeeds.add(config.desiredSpeeds[i]);
+    desiredSpeedsPwm.add(config.desiredSpeedsPwm[i]);
+  }
 
   if (serializeJson(doc, configFile) == 0) {
     Serial.println("Failed to write to config file.");
@@ -60,4 +73,31 @@ bool ConfigManager::saveConfig(Config& config) {
 
   configFile.close();
   return true;
+}
+
+void ConfigManager::zeroSpeedData(Config& config) {
+  for (int i = 0; i < MAX_CALIB_DATA_COUNT; ++i) {
+    config.desiredSpeeds[i] = 0;
+    config.desiredSpeedsPwm[i] = 0;
+  }
+}
+
+void ConfigManager::parseSpeedData(Config& config, JsonDocument& doc) {
+  zeroSpeedData(config);
+  config.desiredSpeedsLen = doc["desiredSpeedsLen"] | 0;
+  if (config.desiredSpeedsLen >= 0) {
+    int i = 0;
+    JsonArray desiredSpeeds = doc["desiredSpeeds"];
+    for (float speed : desiredSpeeds) {
+      config.desiredSpeeds[i] = speed;
+      ++i;
+    }
+
+    i = 0;
+    JsonArray desiredSpeedsPwm = doc["desiredSpeedsPwm"];
+    for (int pwm : desiredSpeedsPwm) {
+      config.desiredSpeedsPwm[i] = pwm;
+      ++i;
+    }
+  }
 }

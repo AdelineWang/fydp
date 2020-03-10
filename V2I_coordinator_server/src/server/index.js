@@ -63,7 +63,8 @@ wss.on('connection', function(ws, req) {
       case 'calib_drive':
       case 'calib_flip_forward':
       case 'calib_flip_steering':
-      case 'calib_sat':
+      case 'calib_speed':
+      case 'calib_steering':
         if (!sockets.hasOwnProperty(id)) {
           ws.send(JSON.stringify({ id: id, type: 'invalid_id'}));
           break;
