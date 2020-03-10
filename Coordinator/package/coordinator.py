@@ -1,4 +1,4 @@
-import matplotlib.image as mpimg
+import cv2
 
 class Coordinator:
     def __init__(self, road, processor):
@@ -7,8 +7,8 @@ class Coordinator:
 
     def update(self):
         # Grab the frame which needs to be processed
-        image = mpimg.imread('overheadreal.jpg')
-
+        image = cv2.imread('overheadreal.jpg')        
+        
         (midpoint, bearing) = self.processor.process_image(image)
         vehicle = self.road.vehicles['red']
         vehicle.x = int(midpoint[0])

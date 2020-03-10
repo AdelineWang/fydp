@@ -11,7 +11,7 @@ class ImageProcessor:
     def process_image(self, image):
         image_y, image_x, _ = image.shape
 
-        hsv_img = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+        hsv_img = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
         red1 = (0, 100, 100)
         red2 = (5, 255, 255)
