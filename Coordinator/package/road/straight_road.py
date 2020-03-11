@@ -21,7 +21,7 @@ class StraightRoad:
         for vehicle in vehicles:
             self.vehicles[vehicle.name] = vehicle
             self.sorted_vehicles[vehicle.lane].append(vehicle.name)
-        self._update_connections()
+        self.update_connections()
 
     def update_positions(self):
         """Update longitude and latitude values for all vehicles."""
@@ -32,7 +32,7 @@ class StraightRoad:
             latitude_pixel_delta = veh.y - lane_center_line
             veh.latitude = latitude_pixel_delta * self.pixel_width
 
-    def _update_connections(self):
+    def update_connections(self):
         """Update vehicle chain for each lane."""
         for lane in range(len(self.sorted_vehicles)):
             # Sort vehicles in lane based on position in lane
@@ -68,10 +68,10 @@ class StraightRoad:
             elif dest_leader is None:
                 vehe.leader = orig_leader
                 continue
-
             orig_gap = self.vehicles[orig_leader].longitude - veh.long_model
             dest_gap = self.vehicles[dest_leader].longitude - veh.long_model
             veh.leader = orig_leader if orig_gap < dest_gap else dest_leader
+
             if veh.name != dest_lane[-1]:
                 veh.follower = dest_lane[i + 1]
             else:
@@ -87,6 +87,7 @@ class StraightRoad:
                 # Add vehicle to destination lane
                 self.sorted_vehicles[veh.dest_lane].append(veh.name)
                 veh.ack_lane_change()
+                continue
             elif veh.lane == veh.dest_lane:
                 if veh.latitude >= veh.width / 2:
                     continue
@@ -94,16 +95,32 @@ class StraightRoad:
                 veh.complete_lane_change()
                 # Remove vehicle from original lane
                 self.sorted_vehicles[veh.orig_lane].remove(veh.name)
+                continue
+
+            # Check if lane change is safe, then proceed
+            lc_gap = 1.3*veh.length
+            if veh.leader is not None:
+                leader = self.vehicles[veh.leader]
+                safe_leader_gap = leader.longitude - veh.longitude > lc_gap
+            else:
+                safe_leader_gap = True
+
+            if veh.follower is not None:
+                follower = self.vehicles[veh.follower]
+                safe_follower_gap = veh.longitude - follower.longitude > lc_gap
+            else:
+                safe_follower_gap = True
+
+            if safe_leader_gap and safe_follower_gap:
+                veh.start_lane_change()
 
     def calc_accel(self, dt):
-        self._update_connections()
         for lane in range(len(self.sorted_vehicles)):
             for i, name in enumerate(self.sorted_vehicles[lane]):
                 veh = self.vehicles[name]
                 speed = veh.speed
 
                 leader = veh.leader
-                # print(f'{name} {leader}')
                 if leader is None:
                     veh.accel = veh.long_model.calc_accel(100, speed, 0, 0)
                     continue

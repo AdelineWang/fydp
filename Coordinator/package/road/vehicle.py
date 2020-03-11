@@ -2,6 +2,7 @@ import numpy as np
 
 # from package.algo.acc import Acc
 from package.algo.acc_alt import AccAlt
+from package.algo.mobil import Mobil
 from package.algo.stanley import StanleyController
 
 class Vehicle:
@@ -51,6 +52,7 @@ class Vehicle:
             max_accel=0.2,
             comfy_decel=0.06,
             max_decel=0.2)
+        self.lc_model = Mobil(b_safe=0.06, b_safe_max=0.2)
         self.steer_model = StanleyController(L=self.axle_length)
 
         self.steering = 0.0

@@ -51,3 +51,32 @@ class AccAlt:
             acc_mix = (1 - self.c)*acc_IDM
             acc_mix += self.c*(acc_CAH + b*math.tanh((acc_IDM - acc_CAH)/b))
             return max(-bmax, acc_mix)
+
+    def calc_acc_give_way(self, s_yield, s_prio, v, v_prio, acc_old):
+        """Calculate give way function for passive merges.
+
+        ACC "give way" function for passive merges where the merging vehicle
+        has priority. It returns the "longitudinal-transversal coupling"
+        acceleration as though the priority vehicle has already merged/changed
+        if this does not include an emergency braking (decel<2*b).
+
+        Notice 1: The caller must ensure that this function
+        is only called for the first vehicle behind a merging vehicle
+        having priority.
+
+        Notice 2: No actual lane change is involved. The lane change of the merging vehicle
+        is just favoured in the next steps by this longitudinal-transversal coupling
+
+        Args:
+            s_yield (float): distance to yield point (stop if merging vehicle
+                             present) [m]
+            s_prio (float): gap vehicle of other road to merge begin [m]
+            v (float): speed of subject vehicle [m/s]
+            v_prio (float): speed of priority vehicle [m/s]
+            acc_old (float): acceleration before coupling
+        """
+        acc_prio_no_yield = self.calc_accel(s_prio, v_prio, 0, 0)
+        acc_yield = self.calc_accel(s_yield, v, 0, 0)
+        priority_relevant = (acc_prio_no_yield < -0.2*self.comfy_decel
+            and acc_yield < -0.2*self.comfy_decel)
+        return acc_yield if priority_relevant else acc_old

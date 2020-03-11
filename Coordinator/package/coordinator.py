@@ -49,6 +49,7 @@ class Coordinator:
             veh.x += d * math.cos(veh.heading) / pixel_width
             veh.y += d * math.sin(veh.heading) / pixel_height
 
+        self.road.update_connections()
         self.road.calc_accel(dt)
         self.road.calc_speed(dt)
         self.road.calc_steering()
