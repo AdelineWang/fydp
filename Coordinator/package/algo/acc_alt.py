@@ -13,7 +13,7 @@ class AccAlt:
         self.max_decel = max_decel
         self.c = 0.99
 
-    def calc_accel(self, gap, v, v_lead, a_lead):
+    def calc_accel(self, gap, v, v_lead, a_lead, force_desired_speed=None):
         if gap < 0.001:
             return -self.max_decel
 
@@ -22,7 +22,10 @@ class AccAlt:
         a = self.max_accel
         b = self.comfy_decel
         bmax = self.max_decel
-        v0eff = min(self.desired_speed, self.speed_limit, self.max_speed)
+        if force_desired_speed is None:
+            v0eff = self.effective_speed()
+        else:
+            v0eff = force_desired_speed
 
         sstar = s0 + max(0, v*T + 0.5*v*(v - v_lead)/math.sqrt(a*b))
         gamma = sstar/gap
@@ -51,6 +54,9 @@ class AccAlt:
             acc_mix = (1 - self.c)*acc_IDM
             acc_mix += self.c*(acc_CAH + b*math.tanh((acc_IDM - acc_CAH)/b))
             return max(-bmax, acc_mix)
+
+    def effective_speed(self):
+        return min(self.desired_speed, self.speed_limit, self.max_speed)
 
     def calc_acc_give_way(self, s_yield, s_prio, v, v_prio, acc_old):
         """Calculate give way function for passive merges.

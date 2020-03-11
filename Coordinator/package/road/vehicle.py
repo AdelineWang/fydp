@@ -1,6 +1,6 @@
 import numpy as np
 
-# from package.algo.acc import Acc
+from package.algo.acc import Acc
 from package.algo.acc_alt import AccAlt
 from package.algo.mobil import Mobil
 from package.algo.stanley import StanleyController
@@ -28,7 +28,7 @@ class Vehicle:
     """
     def __init__(self, name, veh_id, length=0.2, width=0.135, axle_length=0.14/2,
                  max_steering=np.radians(30.0), lane=0, x=0, y=0, heading=0.0,
-                 longitude=0.0, latitude=0.0):
+                 longitude=0.0, latitude=0.0, lc_mult=2, lc_gap_mult=1.3):
         self.name = name
         self.id = veh_id
         self.length = length
@@ -36,14 +36,13 @@ class Vehicle:
         self.axle_length = axle_length
         self.max_steering = max_steering
 
-        self.lane = lane
         self.x = x
         self.y = y
         self.heading = heading
         self.longitude = longitude
         self.latitude = latitude
 
-        self.long_model = AccAlt(
+        self.long_model = Acc(
             desired_speed=0.5,
             speed_limit=2,
             max_speed=2,
@@ -52,13 +51,15 @@ class Vehicle:
             max_accel=0.2,
             comfy_decel=0.06,
             max_decel=0.2)
-        self.lc_model = Mobil(b_safe=0.06, b_safe_max=0.2)
         self.steer_model = StanleyController(L=self.axle_length)
 
         self.steering = 0.0
         self.speed = 0.0
         self.accel = 0.0
 
+        self.lane = lane
+        self.lc_mult = lc_mult
+        self.lc_gap = lc_gap_mult*self.length
         self.leader = None
         self.follower = None
         self.lane_change_requested = False
@@ -66,7 +67,7 @@ class Vehicle:
         self.orig_lane = -1
         self.dest_lane = -1
 
-    def calc_steering(self, pixel_width, pixel_height,desired_heading, error):
+    def calc_steering(self, pixel_width, pixel_height, desired_heading, error):
         cx = self.x * pixel_width
         cy = self.y * pixel_height
         delta = self.steer_model.calc(cx, cy, self.heading, self.speed,
@@ -89,3 +90,6 @@ class Vehicle:
         self.lane_change_in_progress = False
         self.orig_lane = -1
         self.dest_lane = -1
+
+    def is_performing_lane_change(self):
+        return self.lane_change_in_progress and self.lane == self.dest_lane

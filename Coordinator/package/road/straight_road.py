@@ -98,7 +98,7 @@ class StraightRoad:
                 continue
 
             # Check if lane change is safe, then proceed
-            lc_gap = 1.3*veh.length
+            lc_gap = veh.lc_gap
             if veh.leader is not None:
                 leader = self.vehicles[veh.leader]
                 safe_leader_gap = leader.longitude - veh.longitude > lc_gap
@@ -115,22 +115,61 @@ class StraightRoad:
                 veh.start_lane_change()
 
     def calc_accel(self, dt):
+        visited = set()
         for lane in range(len(self.sorted_vehicles)):
             for i, name in enumerate(self.sorted_vehicles[lane]):
+                if name in visited:
+                    continue
+                visited.add(name)
                 veh = self.vehicles[name]
-                speed = veh.speed
 
                 leader = veh.leader
                 if leader is None:
-                    veh.accel = veh.long_model.calc_accel(100, speed, 0, 0)
+                    veh.accel = self._calc_free_accel(veh)
                     continue
 
                 veh_lead = self.vehicles[leader]
-                speed_lead = veh_lead.speed
-                accel_lead = veh_lead.accel
-                s = veh_lead.longitude - veh.longitude
-                veh.accel = veh.long_model.calc_accel(s, speed, speed_lead,
-                                                      accel_lead)
+                veh.accel = self._calc_veh_accel(veh, veh_lead)
+
+    def _calc_free_accel(self, veh):
+        # Temporarily increase desired speed if vehicle merging behind
+        if veh.follower is not None:
+            veh_lag = self.vehicles[veh.follower]
+            if veh_lag.is_performing_lane_change():
+                force_speed = veh.long_model.effective_speed()*veh.lc_mult
+                return veh.long_model.calc_accel(100, veh.speed, 0, 0,
+                    force_desired_speed=force_speed)
+        elif veh.is_performing_lane_change():
+            force_speed = veh.long_model.effective_speed()*veh.lc_mult
+            return veh.long_model.calc_accel(100, veh.speed, 0, 0,
+                force_desired_speed=force_speed)
+
+        return veh.long_model.calc_accel(100, veh.speed, 0, 0)
+
+    def _calc_veh_accel(self, veh, veh_lead):
+        s = veh_lead.longitude - veh.longitude
+        speed = veh.speed
+        speed_lead = veh_lead.speed
+        accel_lead = veh_lead.accel
+
+        # Match speed of leading vehicle while merging into lane. If gap is
+        # less than safe gap, force slower desired speed
+        if veh.is_performing_lane_change():
+            force_speed = veh_lead.long_model.effective_speed()
+            if s < veh.lc_gap:
+                force_speed /= veh.lc_mult
+            return veh.long_model.calc_accel(s, speed, speed_lead, accel_lead,
+                                             force_desired_speed=force_speed)
+        # Match speed of lane changing vehicle merging in front. If gap is
+        # less than safe gap, force slower desired speed
+        elif veh_lead.is_performing_lane_change():
+            force_speed = veh_lead.long_model.effective_speed()
+            if s < veh.lc_gap:
+                force_speed /= veh.lc_mult
+            return veh.long_model.calc_accel(s, speed, speed_lead, accel_lead,
+                                             force_desired_speed=force_speed)
+
+        return veh.long_model.calc_accel(s, speed, speed_lead, accel_lead)
 
     def calc_speed(self, dt):
         for vehicle in self.vehicles.values():
