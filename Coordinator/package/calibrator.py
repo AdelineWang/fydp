@@ -39,17 +39,16 @@ class Calibrator:
         """Returns the width and height mapping of a pixel."""
         width_per_pixel = self.fov_width / self.image_width
         height_per_pixel = self.fov_height / self.image_height
-        return round(width_per_pixel, 3), round(height_per_pixel, 3)
+        return width_per_pixel, height_per_pixel
 
     def calc_error_per_pixel(self, veh_height):
         """Returns the max error from the current setup."""
         width_error, height_error = self.calc_distance_per_pixel()
-        
+
         width_scaling = self.fov_width / self.camera_height
         veh_width_error = width_scaling * veh_height
 
         height_scaling = self.fov_height / self.camera_height
         veh_height_error = height_scaling * veh_height
 
-        return round(width_error + veh_width_error, 3), \
-               round(height_error + veh_height_error, 3)
+        return width_error + veh_width_error, height_error + veh_height_error
