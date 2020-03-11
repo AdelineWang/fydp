@@ -1,0 +1,1 @@
+testserver.py has some skeleton code we can use when implementing the actual hookup between test scenario manager and vehicle coordinator
