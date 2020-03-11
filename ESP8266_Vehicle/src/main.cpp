@@ -62,6 +62,7 @@ void setup() {
     config.port,
     sizeof(config.port));
 
+  // WiFi.disconnect();
   WiFiManager wifiManager;
   wifiManager.addParameter(&ipParam);
   wifiManager.addParameter(&portParam);
@@ -87,11 +88,11 @@ void setup() {
 
 void loop() {
   connection.loop();
-  
+
   unsigned long currMillis = millis();
   if (abs(currMillis - prevMillis) < DATA_INTERVAL)
       return;
-  
+
   veh::accel_vec_t a = accel.getData();
 
   const int capacity = JSON_OBJECT_SIZE(4);
@@ -104,7 +105,7 @@ void loop() {
   char msg[capacity];
   serializeJson(doc, msg);
   connection.sendTXT(msg);
-  
+
   prevMillis = currMillis;
 }
 
@@ -126,7 +127,7 @@ void connectWiFi(String ssid, String password) {
 
 void handleCommand(uint8_t* payload, size_t length) {
   const size_t CAPACITY = JSON_OBJECT_SIZE(8) + 2*JSON_ARRAY_SIZE(MAX_CALIB_DATA_COUNT);
-  StaticJsonDocument<CAPACITY> doc;
+  DynamicJsonDocument doc(CAPACITY);
   DeserializationError error = deserializeJson(doc, payload, length);
   if (error) {
     Serial.println(F("deserializeJson() failed!"));

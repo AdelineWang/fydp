@@ -7,9 +7,9 @@
 #include "Calibration.h"
 
 #define ENA 2
-#define IN1 16
-#define IN2 0
-#define SERVO 12
+#define IN1 0
+#define IN2 16
+#define SERVO 15
 
 namespace veh {
 
