@@ -1,6 +1,7 @@
 import numpy as np
 
-from package.algo.acc import Acc
+# from package.algo.acc import Acc
+from package.algo.acc_alt import AccAlt
 from package.algo.stanley import StanleyController
 
 class Vehicle:
@@ -41,7 +42,7 @@ class Vehicle:
         self.longitude = longitude
         self.latitude = latitude
 
-        self.long_model = Acc(
+        self.long_model = AccAlt(
             desired_speed=0.5,
             speed_limit=2,
             max_speed=2,
@@ -57,7 +58,11 @@ class Vehicle:
         self.accel = 0.0
 
         self.leader = None
-        self.lag = None
+        self.follower = None
+        self.lane_change_requested = False
+        self.lane_change_in_progress = False
+        self.orig_lane = -1
+        self.dest_lane = -1
 
     def calc_steering(self, pixel_width, pixel_height,desired_heading, error):
         cx = self.x * pixel_width
@@ -65,3 +70,20 @@ class Vehicle:
         delta = self.steer_model.calc(cx, cy, self.heading, self.speed,
                                       self.lane, desired_heading, error)
         self.steering = np.clip(delta, -self.max_steering, self.max_steering)
+
+    def request_lane_change(self, target_lane):
+        self.lane_change_requested = True
+        self.orig_lane = self.lane
+        self.dest_lane = target_lane
+
+    def ack_lane_change(self):
+        self.lane_change_in_progress = True
+
+    def start_lane_change(self):
+        self.lane = self.dest_lane
+
+    def complete_lane_change(self):
+        self.lane_change_requested = False
+        self.lane_change_in_progress = False
+        self.orig_lane = -1
+        self.dest_lane = -1

@@ -45,10 +45,8 @@ class StanleyController:
     @staticmethod
     def normalize_angle(angle):
         """Normalize an angle to [-pi, pi]."""
-        while angle > np.pi:
-            angle -= 2.0 * np.pi
-
-        while angle < -np.pi:
-            angle += 2.0 * np.pi
-
+        if angle > np.pi:
+            angle = angle - (np.floor(angle / (2 * np.pi)) + 1) * 2 * np.pi
+        elif angle < -np.pi:
+            angle = angle + (np.floor(angle / (-2 * np.pi)) + 1) * 2 * np.pi
         return angle
