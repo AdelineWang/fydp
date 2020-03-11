@@ -35,3 +35,9 @@ class Vehicle:
         self.steering = 0.0
         self.speed = 0.0
         self.accel = 0.0
+
+        self.leader = None
+        self.lag = None
+
+    def update(self, dt):
+        self.speed = max(self.speed + self.accel * dt, 0)
