@@ -10,8 +10,8 @@ if __name__ == '__main__':
     # Fake calibration data
     # Camera at 1280x720 image resolution mounted 2m high
     calib = Calibrator(1280, 720, 2.0)
-    # Calibrated at 0.3m high, covers 0.5m by 0.281 area
-    calib.calibrate_alt(0.3, 0.42, 0.236)
+    # Calibrated at 0.65m high, covers 0.9m by 0.4m area
+    calib.calibrate_alt(0.65, 0.9, 0.4)
     print('(width, height) per pix = ' + str(calib.calc_distance_per_pixel()))
     print('(error_width, error_height) = ' + str(calib.calc_error_per_pixel(0.05)))
 

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Test Scenario Manager</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  </head>
+  <body>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+        <li class="breadcrumb-item active">Test Scenario Manager</li>
+      </ol>
+    </nav>
+    <div class="container">
+      <div class="row">
+        <div class="col-4 form-group">
+            <input type="radio" id="red" name="vehicle" value="1" checked="checked"/>
+            <label for="male">Vehicle 1 (RED)</label><br>
+            <input type="radio" id="green" name="vehicle" value="2"/>
+            <label for="female">Vehicle 2 (GREEN)</label><br>
+            <input type="radio" id="blue" name="vehicle" value="3"/>
+            <label for="other">Vehicle 3 (BLUE)</label> 
+        </div>
+        <div class="col-4 form-group">
+          <label for="desiredspeed">New desired speed (m/s):</label>
+          <div class="input-group">
+            <input type="number" id="desiredspeed" class="form-control" value="0">
+            <div class="input-group-append">
+              <button id="updateButton" class="btn btn-success">UPDATE</button>
+            </div>
+          </div>
+          
+          <button id="laneChangeButton" class = "btn btn-success">LANE CHANGE</button>
+        </div>
+      </div>
+      <hr/>
+      
+      
+      <div>
+        <h4>Traffic Signals</h4>
+        <div class="row">
+          <div class="col-4 form-group">
+              <label for="trafficlightposition">Position (m):</label>
+              <div class="input-group">
+                <input type="number" id="trafficlightposition" class="form-control" value="0">
+              </div>
+              
+              <label for="signalchangeperiod">Signal change period (s):</label>
+              <div class="input-group">
+                <input type="number" id="signalchangeperiod" class="form-control" value="0">
+              </div>
+          </div>
+          
+          <div class="col-8 form-group">
+            <h5>Existing traffic light positions</h5>
+            
+            <div id="trafficlightpositionselect">
+            <!--<select id="trafficlightpositionselectlist">
+            </select>-->
+            </div>
+            <br>
+            
+            <button id="removetrafficlight" class = "btn btn-success">REMOVE</button>
+          </div>
+          
+        </div>
+        <button id="addtrafficlight" class = "btn btn-success">ADD</button>
+      </div>
+      <hr/>
+      
+      <div>
+        <h4>Speed Limits</h4>
+        <div class="row">
+          <div class="col-4 form-group">
+              <label for="speedlimitposition">Position (m):</label>
+              <div class="input-group">
+                <input type="number" id="speedlimitposition" class="form-control" value="0">
+              </div>
+              
+              <label for="newspeed">New speed (m/s):</label>
+              <div class="input-group">
+                <input type="number" id="newspeed" class="form-control" value="0">
+              </div>
+          </div>
+          
+          <div class="col-8 form-group">
+            <h5>Existing speed limit positions</h5>
+            
+            <div id="speedlimitpositionselect">
+            </div>
+            <!--<select id="speedlimitpositionlist">
+            </select>-->
+            <br>
+            
+            <button id="removespeedlimit" class = "btn btn-success">REMOVE</button>
+          </div>
+        </div>
+          <button id="addspeedlimit" class = "btn btn-success">ADD</button> 
+      </div>
+      <hr/>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="js/testscenariomanager.js"></script>
+  </body>
+</html>
