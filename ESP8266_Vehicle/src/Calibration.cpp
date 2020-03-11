@@ -55,7 +55,7 @@ int PwmMapper::map(float desiredVal) {
   // Linearize based on surrounding two points
   mapping_t lowPoint = mappings[low];
   mapping_t highPoint = mappings[high];
-  return lowPoint.pwmVal 
+  return lowPoint.pwmVal
     + (desiredVal - lowPoint.desiredVal) / (highPoint.desiredVal - lowPoint.desiredVal)
     * (highPoint.pwmVal - lowPoint.pwmVal);
 }

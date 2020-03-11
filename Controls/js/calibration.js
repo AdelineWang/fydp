@@ -34,6 +34,34 @@ function connect() {
   };
 }
 
+const throttle = (callback, delay) => {
+  let throttleTimeout = null;
+  let storedEvent = null;
+
+  const throttledEventHandler = event => {
+    storedEvent = event;
+
+    const shouldHandleEvent = !throttleTimeout;
+
+    if (shouldHandleEvent) {
+      callback(storedEvent);
+
+      storedEvent = null;
+
+      throttleTimeout = setTimeout(() => {
+        throttleTimeout = null;
+
+        if (storedEvent) {
+          throttledEventHandler(storedEvent);
+        }
+      }, delay);
+    }
+  };
+
+  return throttledEventHandler;
+};
+const sendRawDriveCommandThrottled = throttle(sendRawDriveCommand, 200);
+
 // ref: http://stackoverflow.com/a/1293163/2343
 // This will parse a delimited string into an array of
 // arrays. The default delimiter is the comma, but this
@@ -126,7 +154,7 @@ function setupRawSlider(limitId, valueId, sliderId, defaultLimit, defaultValue,
     slide: function (e, ui) {
       value.val(ui.value);
       try {
-        $.throttle(200, sendRawDriveCommand());
+        sendRawDriveCommandThrottled()
       } catch (e) {
         console.error(e.message);
       };
@@ -252,5 +280,5 @@ $(document).ready(function() {
   $('#sendDriveButton').click(function() { sendDriveCommand(); });
 
   setupRawSlider('#maxPwm', '#pwm', '#pwmSlider', 1023, 0, true);
-  setupRawSlider('#maxServoPos', '#servoPos', '#servoPosSlider', 90, 0, false);
+  setupRawSlider('#maxServoPos', '#servoPos', '#servoPosSlider', 90, 0, true);
 });

@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <FS.h>
+#include <algorithm>
 
 #include <ArduinoJson.h>
 
@@ -18,14 +19,16 @@ void ConfigManager::begin() {
 void ConfigManager::loadConfig(Config& config) {
   File configFile = SPIFFS.open(ConfigManager::filename, "r");
   const size_t CAPACITY = JSON_OBJECT_SIZE(10) + 2*JSON_ARRAY_SIZE(MAX_CALIB_DATA_COUNT);
-  StaticJsonDocument<CAPACITY> doc;
+  DynamicJsonDocument doc(CAPACITY);
   DeserializationError error = deserializeJson(doc, configFile);
   if (error) {
     Serial.println("Failed to read config file, using default config.");
+    configFile.close();
+    SPIFFS.remove(ConfigManager::filename);
   }
 
   strlcpy(config.hostname,
-    doc["hostname"] | "0.0.0.0",
+    doc["hostname"] | "192.168.137.1",
     sizeof(config.hostname));
   strlcpy(config.port,
     doc["port"] | "8080",
@@ -37,7 +40,9 @@ void ConfigManager::loadConfig(Config& config) {
   config.midAngle = doc["midAngle"] | 30;
   parseSpeedData(config, doc);
 
-  configFile.close();
+  if (error) {
+    configFile.close();
+  }
 }
 
 bool ConfigManager::saveConfig(Config& config) {
@@ -48,7 +53,7 @@ bool ConfigManager::saveConfig(Config& config) {
   }
 
   const size_t CAPACITY = JSON_OBJECT_SIZE(10) + 2*JSON_ARRAY_SIZE(MAX_CALIB_DATA_COUNT);
-  StaticJsonDocument<CAPACITY> doc;
+  DynamicJsonDocument doc(CAPACITY);
   doc["hostname"] = config.hostname;
   doc["port"] = config.port;
   doc["isForwardFlipped"] = config.isForwardFlipped;
@@ -60,7 +65,8 @@ bool ConfigManager::saveConfig(Config& config) {
   doc["desiredSpeedsLen"] = config.desiredSpeedsLen;
   JsonArray desiredSpeeds = doc.createNestedArray("desiredSpeeds");
   JsonArray desiredSpeedsPwm = doc.createNestedArray("desiredSpeedsPwm");
-  for (int i = 0; i < config.desiredSpeedsLen; ++i) {
+  int maxLength = std::min(config.desiredSpeedsLen, MAX_CALIB_DATA_COUNT);
+  for (int i = 0; i < maxLength; ++i) {
     desiredSpeeds.add(config.desiredSpeeds[i]);
     desiredSpeedsPwm.add(config.desiredSpeedsPwm[i]);
   }
@@ -85,7 +91,7 @@ void ConfigManager::zeroSpeedData(Config& config) {
 void ConfigManager::parseSpeedData(Config& config, JsonDocument& doc) {
   zeroSpeedData(config);
   config.desiredSpeedsLen = doc["desiredSpeedsLen"] | 0;
-  if (config.desiredSpeedsLen >= 0) {
+  if (config.desiredSpeedsLen > 0) {
     int i = 0;
     JsonArray desiredSpeeds = doc["desiredSpeeds"];
     for (float speed : desiredSpeeds) {
