@@ -13,7 +13,7 @@ class Acc:
         self.max_decel = max_decel
         self.cool = 0.99
 
-    def calc_accel(self, gap, v, v_lead, a_lead):
+    def calc_accel(self, gap, v, v_lead, a_lead, force_desired_speed=None):
         if gap < 0.001:
             return -self.max_decel
 
@@ -22,7 +22,10 @@ class Acc:
         a = self.max_accel
         b = self.comfy_decel
         bmax = self.max_decel
-        v0eff = min(self.desired_speed, self.speed_limit, self.max_speed)
+        if force_desired_speed is None:
+            v0eff = self.effective_speed()
+        else:
+            v0eff = force_desired_speed
 
         acc_free = a*(1 - pow(v/v0eff, 4)) if v < v0eff else a*(1 - v/v0eff)
         sstar = s0 + max(0, v*T + 0.5*v*(v - v_lead)/math.sqrt(a*b))
@@ -37,3 +40,6 @@ class Acc:
         acc_mix = acc_IDM if acc_IDM > acc_CAH else acc_CAH + b*math.tanh((acc_IDM - acc_CAH)/b)
         acc_ACC = self.cool*acc_mix + (1 - self.cool)*acc_IDM
         return 0 if v0eff < 0.00001 else max(-bmax, acc_ACC)
+
+    def effective_speed(self):
+        return min(self.desired_speed, self.speed_limit, self.max_speed)

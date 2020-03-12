@@ -31,8 +31,12 @@ class Coordinator:
         vehicle.heading = bearing
         self.road.update_positions()
 
+    def change_lane(self, name, target_lane):
+        self.road.vehicles[name].request_lane_change(target_lane)
+
     def sim_update(self, dt):
         self.road.update_positions()
+        self.road.update_lane_change()
 
         pixel_width = self.road.pixel_width
         pixel_height = self.road.pixel_height
@@ -45,6 +49,7 @@ class Coordinator:
             veh.x += d * math.cos(veh.heading) / pixel_width
             veh.y += d * math.sin(veh.heading) / pixel_height
 
+        self.road.update_connections()
         self.road.calc_accel(dt)
         self.road.calc_speed(dt)
         self.road.calc_steering()
